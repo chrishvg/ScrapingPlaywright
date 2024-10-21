@@ -1,12 +1,6 @@
 import { chromium } from 'playwright'
 import fs from 'fs/promises'
 
-const browser = await chromium.launch({
-  headless: false,
-  slowMo: 100,
-  args: ['--no-sandbox']
-})
-
 async function dateGreaterThanToday(dateFromCalendar) {
   const fechaActual = new Date()
   const fechaElementoFormateada = await new Date(dateFromCalendar.replace('-', ' '))
@@ -41,6 +35,12 @@ async function saveInJson(date, info) {
     }
   }
 }
+
+const browser = await chromium.launch({
+  headless: false,
+  slowMo: 100,
+  args: ['--no-sandbox']
+})
 
 const page = await browser.newPage()
 await page.goto('https://hillsborough.realtaxdeed.com/')
@@ -107,7 +107,7 @@ while (year <= actualYear) {
       await page.waitForLoadState('networkidle')// Wait until page is loaded
     }
   }
-  
+
   await page.locator('.CALNAV[tabindex="0"] a').last().click()
   await page.waitForLoadState('networkidle')// Wait until page is loaded
   testCaldate = await page.locator('.CALDATE[tabindex="0"]').first().textContent()
