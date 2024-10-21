@@ -3,9 +3,11 @@ import fs from 'fs/promises'
 
 async function dateGreaterThanToday(dateFromCalendar) {
   const fechaActual = new Date()
+  //const fechaActual =  Date.parse('01 Dec 2024 00:00:00 GMT')
   const fechaElementoFormateada = await new Date(dateFromCalendar.replace('-', ' '))
 
   return fechaElementoFormateada.getTime() > fechaActual.getTime()
+  //return fechaElementoFormateada.getTime() > fechaActual
 }
 
 async function saveInJson(date, info) {
@@ -60,12 +62,13 @@ while (year <= actualYear) {
       let arrayTosave = []
       for (const auction of auctions) {
         const auctionInfo = await auction.locator('.AD_DTA').allTextContents()
-        const urlParcel = await auction.getByText(auctionInfo[4]).getAttribute('href')
+        const preUrlParcel = await auction.getByText(auctionInfo[4]).getAttribute('href')
         //Parcel page
         const parcelPage = await browser.newPage()
-        await parcelPage.goto(urlParcel)
+        await parcelPage.goto(preUrlParcel)
         await parcelPage.locator('.link.force-one-line').click()
         await parcelPage.waitForLoadState('networkidle')// Wait until page is loaded
+        const urlParcel = await parcelPage.url()
         //Value Summary & GIS Map Table
         const summaryTable = await parcelPage.locator('.value-and-map-data').locator('table').locator('td.centered').allTextContents()
 
@@ -87,16 +90,21 @@ while (year <= actualYear) {
           }
         }
 
+        //Land Lines
+        const lands = await parcelPage.locator('td[data-bind="text: publicValue"]').all()
+        const landValue = await lands[1].textContent()
+
         const auctionToSave = {
-          'caseNumber': auctionInfo[1].trim(),
-          'openingBid': auctionInfo[3],
-          'parcelID': auctionInfo[4].trim(),
-          'urlAuctionInfo': urlParcel,
-          'marketValue' : summaryTable[0],
-          'assessedValue' : summaryTable[1],
-          'yearBuilt' : buildingData[0] ? parseInt(buildingData[0]) : null,
-          'bedrooms' : buildingData[1] ? parseInt(buildingData[1]) : null,
-          'bathrooms' : buildingData[2] ? parseInt(buildingData[2]) : null,
+          'County Case Number': auctionInfo[1].trim(),
+          'Openning Bid': auctionInfo[3],
+          'Parcel ID / Folio': auctionInfo[4].trim(),
+          'Appraisal Link': urlParcel,
+          'Beds' : buildingData[1] ? parseInt(buildingData[1]) : null,
+          'Bath' : buildingData[2] ? parseInt(buildingData[2]) : null,
+          'Year Build' : buildingData[0] ? parseInt(buildingData[0]) : null,
+          'Land Value' : landValue,
+          'Market Value' : summaryTable[0],
+          'Assessed Value' : summaryTable[1],
         }
 
         arrayTosave.push(auctionToSave)
