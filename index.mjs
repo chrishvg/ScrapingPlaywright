@@ -11,7 +11,7 @@ async function dateGreaterThanToday(dateFromCalendar) {
 async function saveInJson(date, info) {
   const fechaElementoFormateada = new Date(date.replace('-', ' '))
   const dataToSave = {
-    fecha: fechaElementoFormateada.toISOString(),
+    date: fechaElementoFormateada.toISOString(),
     data: info
   }
 
@@ -90,7 +90,7 @@ while (year <= actualYear) {
         const auctionToSave = {
           'caseNumber': auctionInfo[1].trim(),
           'openingBid': auctionInfo[3],
-          'parcelID': trim(auctionInfo[4]).trim(),
+          'parcelID': auctionInfo[4].trim(),
           'urlAuctionInfo': urlParcel,
           'marketValue' : summaryTable[0],
           'assessedValue' : summaryTable[1],
