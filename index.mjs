@@ -2,12 +2,12 @@ import { chromium } from 'playwright'
 import fs from 'fs/promises'
 
 async function dateGreaterThanToday(dateFromCalendar) {
-  const fechaActual = new Date()
-  //const fechaActual =  Date.parse('01 Dec 2024 00:00:00 GMT')
+  //const fechaActual = new Date()
+  const fechaActual =  Date.parse('15 Dec 2024 00:00:00 GMT')
   const fechaElementoFormateada = await new Date(dateFromCalendar.replace('-', ' '))
 
-  return fechaElementoFormateada.getTime() > fechaActual.getTime()
-  //return fechaElementoFormateada.getTime() > fechaActual
+  //return fechaElementoFormateada.getTime() > fechaActual.getTime()
+  return fechaElementoFormateada.getTime() > fechaActual
 }
 
 async function saveInJson(date, info) {
@@ -66,48 +66,52 @@ while (year <= actualYear) {
         //Parcel page
         const parcelPage = await browser.newPage()
         await parcelPage.goto(preUrlParcel)
-        await parcelPage.locator('.link.force-one-line').click()
-        await parcelPage.waitForLoadState('networkidle')// Wait until page is loaded
-        const urlParcel = await parcelPage.url()
-        //Value Summary & GIS Map Table
-        const summaryTable = await parcelPage.locator('.value-and-map-data').locator('table').locator('td.centered').allTextContents()
+        const parceltable = await parcelPage.locator('.link.force-one-line')
+        if (await parceltable.count() > 0) {
+          await parceltable.click()
+          await parcelPage.waitForLoadState('networkidle')// Wait until page is loaded
+          const urlParcel = await parcelPage.url()
+          //Value Summary & GIS Map Table
+          const summaryTable = await parcelPage.locator('.value-and-map-data').locator('table').locator('td.centered').allTextContents()
 
-        //Building 1 Tables
-        const tables = await parcelPage.locator('.section-wrap').locator('table').all()
-        let buildingData = []
-        for (const table of tables) {
-          const yearBuiltRow = await table.locator('tr:has-text("Year Built:")').locator('td').all()
-          const bedroomsRow = await table.locator('tr:has-text("Bedrooms")').locator('td').all()
-          const bathroomsRow = await table.locator('tr:has-text("Bathrooms")').locator('td').all()
-          if (yearBuiltRow.length > 0) {
-            buildingData.push(await yearBuiltRow[1].textContent())
+          //Building 1 Tables
+          const tables = await parcelPage.locator('.section-wrap').locator('table').all()
+          let buildingData = []
+          for (const table of tables) {
+            const yearBuiltRow = await table.locator('tr:has-text("Year Built:")').locator('td').all()
+            const bedroomsRow = await table.locator('tr:has-text("Bedrooms")').locator('td').all()
+            const bathroomsRow = await table.locator('tr:has-text("Bathrooms")').locator('td').all()
+            if (yearBuiltRow.length > 0) {
+              buildingData.push(await yearBuiltRow[1].textContent())
+            }
+            if (bedroomsRow.length > 0) {
+              buildingData.push(await bedroomsRow[1].textContent())
+            }
+            if (bathroomsRow.length > 0) {
+              buildingData.push(await bathroomsRow[1].textContent())
+            }
           }
-          if (bedroomsRow.length > 0) {
-            buildingData.push(await bedroomsRow[1].textContent())
+
+          //Land Lines
+          const lands = await parcelPage.locator('td[data-bind="text: publicValue"]').all()
+          const landValue = await lands.pop().textContent()
+
+          const auctionToSave = {
+            'County Case Number': auctionInfo[1].trim(),
+            'Openning Bid': auctionInfo[3],
+            'Parcel ID / Folio': auctionInfo[4].trim(),
+            'Appraisal Link': urlParcel,
+            'Beds' : buildingData[1] ? parseInt(buildingData[1]) : null,
+            'Bath' : buildingData[2] ? parseInt(buildingData[2]) : null,
+            'Year Build' : buildingData[0] ? parseInt(buildingData[0]) : null,
+            'Land Value' : landValue,
+            'Market Value' : summaryTable[0],
+            'Assessed Value' : summaryTable[1],
+            'Regrid Link' : '**--**',
           }
-          if (bathroomsRow.length > 0) {
-            buildingData.push(await bathroomsRow[1].textContent())
-          }
+
+          arrayTosave.push(auctionToSave)
         }
-
-        //Land Lines
-        const lands = await parcelPage.locator('td[data-bind="text: publicValue"]').all()
-        const landValue = await lands[1].textContent()
-
-        const auctionToSave = {
-          'County Case Number': auctionInfo[1].trim(),
-          'Openning Bid': auctionInfo[3],
-          'Parcel ID / Folio': auctionInfo[4].trim(),
-          'Appraisal Link': urlParcel,
-          'Beds' : buildingData[1] ? parseInt(buildingData[1]) : null,
-          'Bath' : buildingData[2] ? parseInt(buildingData[2]) : null,
-          'Year Build' : buildingData[0] ? parseInt(buildingData[0]) : null,
-          'Land Value' : landValue,
-          'Market Value' : summaryTable[0],
-          'Assessed Value' : summaryTable[1],
-        }
-
-        arrayTosave.push(auctionToSave)
         parcelPage.close()
       }
       saveInJson(dateFromCalendar, arrayTosave)
