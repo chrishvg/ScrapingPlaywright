@@ -49,6 +49,7 @@ await page.waitForLoadState('networkidle')// Wait until page is loaded
 // await page.locator('#map_signin_email').last().fill('')
 // await page.locator('#map_signin_password').last().fill('')
 // await page.locator('#signInCard-signIn').last().locator('[type=submit]').click()
+// await page.waitForSelector('span:is(.text.bold.truncate):visible:has-text("fffhunter")');
 //end sign in
 
 let arrayTosave = []
@@ -62,7 +63,7 @@ for (const folioId of document.data) {
   //click on the link
   const links = await page.locator('.headline.parcel-result a').all()
   await links.at(2).click()
-  await page.waitForLoadState('networkidle')// Wait until page is loaded
+  await page.waitForSelector('h3.h4:visible:has-text("Property Details")');
 
   //get legal description
   const legalValue = await page.locator('div.field:has-text("Legal Description")').locator('.field-value').textContent()
