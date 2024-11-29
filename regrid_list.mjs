@@ -3,7 +3,8 @@ import { readFile } from 'fs/promises'
 import fs from 'fs/promises'
 
 async function saveInJson(info) {
-  const filePath = 'missouri_jackson_results.json'
+  const today = new Date()
+  const filePath = `missouri_jackson_results_${today.getDate()}-${today.getMonth() + 1}.json`
 
   try {
     const existingData = await fs.readFile(filePath, 'utf8');
@@ -103,8 +104,21 @@ for (const folioId of document.data) {
   const year = yearBuilds.find(element => formatYearBuild.test(element))
   const yearToSave = typeof year !== 'undefined' ? year : ''
 
+  //get appraisal link
+  const groupSizes = [2, 3, 2, 2, 2, 1, 2, 3]
+  let currentIndex = 0
+  let arrayFolioId = []
+  for (const size of groupSizes) {
+    let temp = folioSubString.substring(currentIndex, currentIndex + size)
+    arrayFolioId.push(temp)
+    currentIndex += size
+  }
+  const folioIdFormat = arrayFolioId.join('-')
+  const urlAppraisal = "https://ascendweb.jacksongov.org/parcelinfo.aspx?parcel_number=" + folioIdFormat
+
   const dataToSave = {
-    'Parcel ID / Folio': folioId,
+    'Parcel ID / Folio' : folioId,
+    'Appraisal Link': urlAppraisal,
     'Regrid Link' : page.url(),
     'Owner' : owner,
     'Address' : address,
