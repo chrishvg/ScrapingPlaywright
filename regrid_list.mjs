@@ -87,16 +87,14 @@ for (const folioId of document.data) {
   const mailAdress = enhancedOwner.at(3).trim()
 
   //get coordinates
-  const coordinatesContents = await page.locator('div.panel-body:has-text("Centroid Coordinates")').locator('.field-value').locator('.flex-row-between').allTextContents()
-  const formatCoordinates = /^(\-?\d+\.\d+), (\-?\d+\.\d+)$/ 
-  const coordinates = coordinatesContents.find(element => formatCoordinates.test(element))
+  const coordinates = await page.locator('div.field:has-text("Centroid Coordinates")').locator('span').textContent()
 
   //get flood
   const floodContents = await page.locator('div.subsection:has-text("FEMA Flood Data")').locator('.field-value').locator('.flex-row-between').allTextContents()
   const flood = floodContents.length > 0 ? floodContents[0] : ''
 
   //get zoning
-  const zoning = await page.locator('div.panel-body:has-text("Zoning Type")').locator('.field-value').locator('.flex-row-between').allTextContents()
+  const zoning = await page.locator('div.field:has-text("Zoning Type")').locator('.flex-row-between').locator('span').textContent()
 
   //get structure year
   const yearBuilds = await page.locator('div.panel-body:has-text("Structure Year Built")').locator('.field-value').locator('.flex-row-between').allTextContents()
@@ -116,6 +114,9 @@ for (const folioId of document.data) {
   const folioIdFormat = arrayFolioId.join('-')
   const urlAppraisal = "https://ascendweb.jacksongov.org/parcelinfo.aspx?parcel_number=" + folioIdFormat
 
+  //get parcer use description
+  const parcelUseDescription = await page.locator('div.field:has-text("Parcel Use Description")').locator('span').textContent()
+
   const dataToSave = {
     'Parcel ID / Folio' : folioId,
     'Appraisal Link': urlAppraisal,
@@ -126,7 +127,8 @@ for (const folioId of document.data) {
     'Zip' : zip,
     'Lot Size (sqf)' : landSize,
     'Year Built' : yearToSave,
-    'Primary Land Use' : zoning.at(2),
+    'Primary Land Use' : zoning,
+    'Parcel Use Description' : parcelUseDescription,
     'Legal Description' : legalValue,
     'Geo Location Latitude and Longitude' : coordinates,
     'Mail Address' : mailAdress,
