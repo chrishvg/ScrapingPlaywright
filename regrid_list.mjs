@@ -44,13 +44,17 @@ await page.setExtraHTTPHeaders({
 //Sign in
 await page.goto('https://app.regrid.com/us/mo/')
 await page.waitForLoadState('networkidle')// Wait until page is loaded
-// await page.locator('.fa.fa-angle-down.h4.margin-left-md.rotate-0.white').click()
-// await page.waitForLoadState('networkidle')// Wait until page is loaded
-// await page.locator('.show-signup').click()
-// await page.locator('#map_signin_email').last().fill('')
-// await page.locator('#map_signin_password').last().fill('')
-// await page.locator('#signInCard-signIn').last().locator('[type=submit]').click()
-// await page.waitForSelector('span:is(.text.bold.truncate):visible:has-text("fffhunter")');
+await page.locator('.fa.fa-angle-down.h4.margin-left-md.rotate-0.white').click()
+await page.waitForLoadState('networkidle')// Wait until page is loaded
+await page.locator('.show-signup').click()
+await page.waitForSelector('#signup-signin', { state: 'visible' })
+const signin = await page.locator('#map_signin_email').all()
+await signin.at(1).fill('')
+const password = await page.locator('#map_signin_password').all()
+await password.at(1).fill('')
+const submitButton = await page.locator('#signInCard-signIn').all()
+await submitButton.at(1).locator('[type=submit]').click()
+await page.waitForSelector('div.map', { state: 'visible' });
 //end sign in
 
 let arrayTosave = []
@@ -76,8 +80,14 @@ for (const folioId of document.data) {
   const zip = addressSeparated.at(2).split(' ').at(2).trim()
 
   //get lot size
-  const measurements = await page.getByText('sqft').textContent()
-  const landSize = measurements.split(' ').at(0).trim()
+  const buttonLocator = await page.locator('button[data-tip="Change measurement units"]').all()
+  buttonLocator.at(0).click()
+  await page.waitForSelector('select.conversion-select:visible')
+  const selectLocator = await page.locator('select.conversion-select')
+  await selectLocator.selectOption('squareFeet')
+  const measurements = await page.locator('span.conversion-value').all()
+  const landText = await measurements.at(0).textContent()
+  const landSize = landText.split(' ').at(0).trim()
 
   //get owner
   const enhancedOwner = await page.locator('div.panel-body:has-text("Enhanced Owner")').locator('.field-value').locator('.flex-row-between').allTextContents()
@@ -90,8 +100,11 @@ for (const folioId of document.data) {
   const coordinates = await page.locator('div.field:has-text("Centroid Coordinates")').locator('span').textContent()
 
   //get flood
-  const floodContents = await page.locator('div.subsection:has-text("FEMA Flood Data")').locator('.field-value').locator('.flex-row-between').allTextContents()
-  const flood = floodContents.length > 0 ? floodContents[0] : ''
+  const floodContents = await page.locator('div.field:has-text("FEMA Flood Zone")').all()
+  let flood = ''
+  if (floodContents.length > 0) {
+    flood = await floodContents.at(0).locator('.field-value').textContent()
+  }
 
   //get zoning
   const zoning = await page.locator('div.field:has-text("Zoning Type")').locator('.flex-row-between').locator('span').textContent()
