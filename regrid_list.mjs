@@ -106,9 +106,6 @@ for (const folioId of document.data) {
     flood = await floodContents.at(0).locator('.field-value').textContent()
   }
 
-  //get zoning
-  const zoning = await page.locator('div.field:has-text("Zoning Type")').locator('.flex-row-between').locator('span').textContent()
-
   //get structure year
   const yearBuilds = await page.locator('div.panel-body:has-text("Structure Year Built")').locator('.field-value').locator('.flex-row-between').allTextContents()
   const formatYearBuild = /^(\d{4})$/
@@ -140,8 +137,7 @@ for (const folioId of document.data) {
     'Zip' : zip,
     'Lot Size (sqf)' : landSize,
     'Year Built' : yearToSave,
-    'Primary Land Use' : zoning,
-    'Parcel Use Description' : parcelUseDescription,
+    'Primary Land Use' : parcelUseDescription,
     'Legal Description' : legalValue,
     'Geo Location Latitude and Longitude' : coordinates,
     'Mail Address' : mailAdress,
