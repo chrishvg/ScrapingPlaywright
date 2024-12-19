@@ -41,6 +41,15 @@ await page.setExtraHTTPHeaders({
   'Accept-Language': 'en-US,en;q=0.9',
 });
 
+const pageMap = await browser.newPage()
+await pageMap.setExtraHTTPHeaders({
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Accept-Language': 'en-US,en;q=0.9',
+});
+
+await pageMap.goto('https://www.google.com/maps/')
+await pageMap.waitForLoadState('networkidle')// Wait until page is loaded
+
 //Sign in
 await page.goto('https://app.regrid.com/us/mo/')
 await page.waitForLoadState('networkidle')// Wait until page is loaded
@@ -54,7 +63,7 @@ const password = await page.locator('#map_signin_password').all()
 await password.at(1).fill('')
 const submitButton = await page.locator('#signInCard-signIn').all()
 await submitButton.at(1).locator('[type=submit]').click()
-await page.waitForSelector('div.map', { state: 'visible' });
+await page.waitForTimeout(1000);
 //end sign in
 
 let arrayTosave = []
@@ -127,6 +136,13 @@ for (const folioId of document.data) {
   //get parcer use description
   const parcelUseDescription = await page.locator('div.field:has-text("Parcel Use Description")').locator('span').textContent()
 
+  //get map link
+  const inputMap = await pageMap.locator('#searchboxinput')
+  await inputMap.fill(coordinates)
+  await inputMap.press('Enter')
+  await page.waitForTimeout(1000);
+  const mapLink = await pageMap.url()
+
   const dataToSave = {
     'Parcel ID / Folio' : folioId,
     'Appraisal Link': urlAppraisal,
@@ -140,6 +156,7 @@ for (const folioId of document.data) {
     'Primary Land Use' : parcelUseDescription,
     'Legal Description' : legalValue,
     'Geo Location Latitude and Longitude' : coordinates,
+    'Google Map Link' : mapLink,
     'Mail Address' : mailAdress,
     'Flood' : flood,
   }

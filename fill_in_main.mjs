@@ -33,7 +33,8 @@ const FIELDS = {
   'Lot Size (sqf)': '#vLEADLOTSIZE',
   'Primary Land Use': '#vLEADZONNINGCODE',
   'Legal Description': '#vLEADBRIEFLEGALDESCRIPTION',
-  'Geo Location Latitude and Longitude': '#vLEADGEOLOCATIONLATXLONG'
+  'Geo Location Latitude and Longitude': '#vLEADGEOLOCATIONLATXLONG',
+  'Google Map Link': '#vLEADGOOGLEMAP'
 }
 
 const nameLatestFile = await getLatestFile(process.cwd())
