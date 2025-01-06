@@ -1,9 +1,17 @@
 import { chromium } from 'playwright'
 import XLSX from 'xlsx'
 
-function saveToExcel(data) {
-  const date = new Date()
-  const fileName = `clay_${date.getDate()}_${date.getMonth() + 1}_${date.getHours()}_${date.getMinutes()}.xlsx`
+function saveToExcel(url, data) {
+  const regexText = /\/\/([^\.]+)\.realtaxdeed/
+  const matchText = url.match(regexText)
+  const countyName = matchText ? matchText[1] : ""
+
+  const regexDate = /\d{2}\/\d{2}\/\d{4}$/
+  const matchDate = url.match(regexDate)
+  const date = matchDate ? matchDate[0].replace(/\//g, '-') : ""
+
+  const fileName = `${countyName}_${date}.xlsx`
+  
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet(data)
   XLSX.utils.book_append_sheet(workbook, worksheet, "Data")
@@ -12,6 +20,7 @@ function saveToExcel(data) {
   console.log('Datos agregados correctamente al archivo ', fileName)
 }
 
+const url = 'https://leon.realtaxdeed.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/21/2024'
 const invalidArray = []
 const browser = await chromium.launch({
   headless: false,
@@ -43,7 +52,7 @@ await submitButton.at(1).locator('[type=submit]').click()
 //end sign in
 
 await page.setExtraHTTPHeaders(header)
-await page.goto('https://clay.realtaxdeed.com/index.cfm?zaction=AUCTION&zmethod=PREVIEW&AuctionDate=11/06/2024')
+await page.goto(url)
 await page.waitForLoadState('networkidle')// Wait until page is loaded
 let currentPage = 1
 let arrayTosave = []
@@ -67,6 +76,7 @@ while (currentPage <= finalPage) {
       let ParcelIDFolio = ''
       let OpenningBid = ''
       let address = ''
+      let addressCalendar = ''
       let city = ''
       let zip = ''
       let landSize = ''
@@ -122,7 +132,7 @@ while (currentPage <= finalPage) {
         'Openning Bid': OpenningBid,
         'Sold Amount': amountSold,
         'Lot Size (sqf)' : landSize,
-        'Address' : address,
+        'Address' : address == '' ? addressCalendar : address,
         'City' : city,
         'Zip' : zip
       }
@@ -136,5 +146,5 @@ while (currentPage <= finalPage) {
   await page.waitForLoadState('networkidle')// Wait until page is loaded
   await page.waitForTimeout(1000)
 }
-saveToExcel(arrayTosave)
+saveToExcel(url,arrayTosave)
 await browser.close()
