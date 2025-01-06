@@ -34,14 +34,14 @@ const FIELDS = {
   'Primary Land Use': '#vLEADZONNINGCODE',
   'Legal Description': '#vLEADBRIEFLEGALDESCRIPTION',
   'Geo Location Latitude and Longitude': '#vLEADGEOLOCATIONLATXLONG',
-  'Google Map Link': '#vLEADGOOGLEMAP'
+  //'Google Map Link': '#vLEADGOOGLEMAP'
 }
 
 const nameLatestFile = await getLatestFile(process.cwd())
 
 const document = JSON.parse(
   await readFile(new URL(`./${nameLatestFile}`, import.meta.url))
-);
+)
 
 const browser = await chromium.launch({
   headless: false,
@@ -53,7 +53,7 @@ const page = await browser.newPage()
 await page.setExtraHTTPHeaders({
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
   'Accept-Language': 'en-US,en;q=0.9',
-});
+})
 
 //Sign in
 await page.goto('http://194.93.58.207/deed/login.aspx')
@@ -65,15 +65,15 @@ await password.fill('')
 await page.locator('#LOGIN').click()
 //end sign in
 
-await page.waitForTimeout(1000);
+await page.waitForTimeout(1000)
 await page.locator('#NEWPLAN').click()
-await page.waitForTimeout(1000);
+await page.waitForTimeout(1000)
 await page.selectOption('#vSTATEID', 'MO')
-await page.waitForTimeout(1000);
+await page.waitForTimeout(1000)
 await page.selectOption('#vCOUNTYNAME', 'Jackson County')
 let input = null
 for (const record of document) {
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000)
   for (const [key, value] of Object.entries(record)) {
     if (FIELDS.hasOwnProperty(key)){
       input = await page.locator(FIELDS[key])
