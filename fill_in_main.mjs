@@ -23,6 +23,8 @@ async function getLatestFile(directory) {
 }
 
 const FIELDS = {
+  'County Case Number': '#vLEADCOUNTYCASENUMBER',
+  'Openning Bid' : '#vLEADOPENNINGBID',
   'Parcel ID / Folio': '#vPARCELID',
   'Appraisal Link': '#vLEADAPPRAISALLINK',
   'Regrid Link': '#vLEADREGRIDLINK',
@@ -31,10 +33,10 @@ const FIELDS = {
   'City': '#vLEADCITY',
   'Zip': '#vLEADZIP',
   'Lot Size (sqf)': '#vLEADLOTSIZE',
-  'Primary Land Use': '#vLEADZONNINGCODE',
+  'Assessed Value': '#vLEADTOTALAPPRAISEDVALUE',
   'Legal Description': '#vLEADBRIEFLEGALDESCRIPTION',
   'Geo Location Latitude and Longitude': '#vLEADGEOLOCATIONLATXLONG',
-  //'Google Map Link': '#vLEADGOOGLEMAP'
+  'Google Map Link': '#vLEADGOOGLEMAP'
 }
 
 const nameLatestFile = await getLatestFile(process.cwd())
@@ -68,11 +70,12 @@ await page.locator('#LOGIN').click()
 await page.waitForTimeout(1000)
 await page.locator('#NEWPLAN').click()
 await page.waitForTimeout(1000)
-await page.selectOption('#vSTATEID', 'MO')
+await page.selectOption('#vSTATEID', 'FL')
 await page.waitForTimeout(1000)
-await page.selectOption('#vCOUNTYNAME', 'Jackson County')
+await page.selectOption('#vCOUNTYNAME', 'Charlotte County')
 let input = null
 for (const record of document) {
+  await page.selectOption('#vLEADTYPE', 'Auction TAX DEED')
   await page.waitForTimeout(1000)
   for (const [key, value] of Object.entries(record)) {
     if (FIELDS.hasOwnProperty(key)){

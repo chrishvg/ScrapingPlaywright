@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "playwright": "^1.48.1"
+    "playwright": "^1.48.1",
+    "xlsx": "^0.18.5"
   }
 }
