@@ -10,7 +10,7 @@ async function getLatestFile(directory) {
 
     const filePaths = files
       .map(file => join(directory, file))
-      .filter(file => statSync(file).isFile() && file.indexOf('_results_') > -1)
+      .filter(file => statSync(file).isFile() && file.indexOf('results_') > -1)
 
     const sortedFiles = filePaths.sort((a, b) => {
       return statSync(b).ctimeMs - statSync(a).ctimeMs
@@ -71,11 +71,18 @@ let arrayTosave = []
 let input = null
 for (let record of document) {
   input = await page.locator('#searchboxinput')
-  await input.fill(record["Geo Location Latitude and Longitude"])
-  await page.keyboard.press('Enter')
-  await page.waitForLoadState('networkidle')// Wait until page is loaded
-  await page.waitForTimeout(1000)
-  record["Google Map Link"] = page.url()
+  if (record["Geo Location Latitude and Longitude"] != "") {
+    await input.fill(record["Geo Location Latitude and Longitude"])
+    await page.keyboard.press('Enter')
+    await page.waitForLoadState('networkidle')// Wait until page is loaded
+    await page.waitForTimeout(1000)
+    record["Google Map Link"] = page.url()
+  } else {
+    record["Google Map Link"] = ""
+  }
+  
   arrayTosave.push(record)
 }
+await page.waitForTimeout(1000)
 saveInJson(arrayTosave)
+browser.close()

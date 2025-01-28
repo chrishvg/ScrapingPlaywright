@@ -70,8 +70,10 @@ await page.locator('#LOGIN').click()
 await page.waitForTimeout(1000)
 await page.locator('#NEWPLAN').click()
 await page.waitForTimeout(1000)
+//Cambiar cuando se cambia de estado
 await page.selectOption('#vSTATEID', 'FL')
 await page.waitForTimeout(1000)
+//Cambiar cuando se cambia de condado
 await page.selectOption('#vCOUNTYNAME', 'Charlotte County')
 let input = null
 for (const record of document) {
